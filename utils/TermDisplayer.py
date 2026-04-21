@@ -15,6 +15,8 @@ class TermDisplayer:
         self.master = master
         self.current_term = None
 
+        self.model = self.view.mediator.model
+
         # Frame for canvas and Scrollbars
         self.main_frame = tk.Frame(self.master)
         self.main_frame.pack(fill=tk.BOTH, expand=True)
@@ -92,7 +94,7 @@ class TermDisplayer:
 
         for attribute, value in term_items:
             # Skip blacklisted term attributes
-            if attribute in self.view.mediator.model.settings[Enum.Settings.Blacklisted_Term_Attributes]:
+            if attribute in self.model.settings[Enum.Settings.Blacklisted_Term_Attributes]:
                 continue
 
             frame = tk.Frame(self.frame_container, background=Enum.LIGHT_GRAY)
@@ -107,7 +109,7 @@ class TermDisplayer:
                 text = f'{attribute}: {value}'
 
             # Normalize, because one \n, may become two of them
-            text = self.view.mediator.model.normalize_text(text)
+            text = self.model.normalize_text(text)
 
             # Special case, where the attribute is None, we want to display an empty string
             if value is None:
@@ -124,14 +126,14 @@ class TermDisplayer:
             # Enable a way to view attribute's image
             if attribute in (Enum.TermAttribute.Subject_Image.value, Enum.TermAttribute.Predicate_Image.value) and value:
                 try:
-                    image_path = fr"{os.getcwd()}\images\{value}"
-                    image = ImageFuncs.resize(image_path, **self.view.mediator.model.get_image_requirements())
+                    image_path = os.path.join(self.model.get_images_path(), value)
+
+                    image = ImageFuncs.resize(image_path, **self.model.get_image_requirements())
 
                     label.image = image
                     label.configure(image=image, compound='top')
                 except Exception as e:
-                    pass
-                    # print(e)
+                    print(f"An error occurred: {e}")
 
             label.pack(anchor=tk.NW, expand=True)
 

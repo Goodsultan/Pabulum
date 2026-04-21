@@ -1,21 +1,13 @@
 import sys
-# import threading
 import tkinter.font
 from tkinter import messagebox
+from tkinter import filedialog
 import keyboard
 import copy
 import os
-# from playsound import playsound
 import json
 import pyperclip
 import random
-# from deep_translator import GoogleTranslator
-# try:
-#     import googletrans
-#     translator = googletrans.Translator()
-# except:
-#     translator = None
-
 import re
 import time
 import math
@@ -27,6 +19,17 @@ from utils.Screenshot import Screenshot
 from utils.SimpleDialog import SimpleDialog
 from services.Vocabulary import Vocabulary
 from services.Translation import Translation
+
+# import threading
+
+# from playsound import playsound
+
+# from deep_translator import GoogleTranslator
+# try:
+#     import googletrans
+#     translator = googletrans.Translator()
+# except:
+#     translator = None
 
 
 class Controller:
@@ -47,40 +50,44 @@ class Controller:
             print(f"An error occurred: {e}")
 
     def check_categorization(self):
-        model = self.mediator.model
-        view = self.mediator.view
+        try:
+            model = self.mediator.model
+            view = self.mediator.view
 
-        interval = model.settings[Enum.Settings.Categorization_Check_Interval]
-        practice_alert_bool = model.settings[Enum.Settings.Practice_Alert]
-        minimum_practice_terms_for_alert = model.settings[Enum.Settings.Minimum_Practice_Terms_For_Alert]
-        categorization = model.practice_set.categorize()
+            interval = model.settings[Enum.Settings.Categorization_Check_Interval]
+            practice_alert_bool = model.settings[Enum.Settings.Practice_Alert]
+            minimum_practice_terms_for_alert = model.settings[Enum.Settings.Minimum_Practice_Terms_For_Alert]
+            categorization = model.practice_set.categorize()
 
-        # Play sound to alert user of due practice terms
-        if practice_alert_bool and len(categorization['priority']) >= minimum_practice_terms_for_alert:
-            # Make sure user is not already on the practice tab
-            if not view.current_tab_name == view.Tab.Practice.name:
-                print(f"{time.time()} - TERM DUE")
+            # Play sound to alert user of due practice terms
+            if practice_alert_bool and len(categorization['priority']) >= minimum_practice_terms_for_alert:
+                # Make sure user is not already on the practice tab
+                if not view.current_tab_name == view.Tab.Practice.name:
+                    print(f"{time.time()} - TERM DUE")
 
-                # try:
-                #
-                #     pass
-                #     # threading.Thread(target=playsound, args=(fr'{Enum.SOUNDS_DIRECTORY}\ding.mp3',), daemon=True).start()
-                # except Exception as e:
-                #     print(e)
+                    # try:
+                    #
+                    #     pass
+                    #     # threading.Thread(target=playsound, args=(fr'{Enum.SOUNDS_DIRECTORY}\ding.mp3',), daemon=True).start()
+                    # except Exception as e:
+                    #     print(e)
 
-        # # Auto return
-        # if model.settings[Enum.Settings.Auto_Return] is not False:
-        #     if view.current_tab_name == view.Tab.Practice.name:
-        #         self.on_menu_command(Enum.PracticeCommand.Return)
+            # # Auto return
+            # if model.settings[Enum.Settings.Auto_Return] is not False:
+            #     if view.current_tab_name == view.Tab.Practice.name:
+            #         self.on_menu_command(Enum.PracticeCommand.Return)
 
-        # Update practice tab when necessary
-        practice_tab = view.tabs[view.Tab.Practice.name]
-        if categorization['priority'] and not practice_tab.practice_widgets:
-            practice_tab.update()
+            # Update practice tab when necessary
+            practice_tab = view.tabs[view.Tab.Practice.name]
+            if categorization['priority'] and not practice_tab.practice_widgets:
+                practice_tab.update()
 
-        # Update
-        view.root.after(interval, self.check_categorization)
-        view.tabs[view.Tab.Menu.name].update()
+            # Update
+            view.root.after(interval, self.check_categorization)
+            view.tabs[view.Tab.Menu.name].update()
+
+        except Exception as e:
+            print(f"An error occurred: {e}")
 
     def on_menu_command(self, command):
         try:
@@ -91,8 +98,8 @@ class Controller:
             if command == Enum.MenuCommand.Help:
                 message = '''This is an application created to make learning easier. You can use this program to study vocabulary or programming. It's extremely useful if you have an exam, and you need to memorize a lot of stuff.
 
-type in t1 or t2 or t3 or t4 to navigate around the tabs.
-type in s1 or s2 or s3 to navigate around services.
+Type in t1 or t2 or t3 or t4 to navigate around the tabs.
+Type in s1 or s2 or s3 to navigate around services.
 
 Services specialize in different areas of knowledge:
 
@@ -100,7 +107,7 @@ The standard service helps you to quickly create flashcards.
 The images service helps you manage images.
 The vocabulary service helps you to create flashcards based on words and definitions faster than standard service.
 
-
+Remember to use the command Pick_Main_Directory to select a folder, where you will store all your flashcards!
 
 Happy learning!'''
                 messagebox.showinfo('Help', message)
@@ -125,7 +132,7 @@ Happy learning!'''
             elif command == Enum.MenuCommand.Print_Sets_Randomly:
                 files = model.get_set_files()
                 # random.shuffle(files)
-                print(files)
+                print("Sets:\n", files)
 
                 message = f'{files}'
                 messagebox.showinfo('Print_Sets_Randomly', message)
@@ -155,7 +162,29 @@ Happy learning!'''
             elif command == Enum.MenuCommand.Load_Practice_Set:
                 print(f"PracticeStash\n\tlength: {len(model.PracticeStash)}\n\tkeys: {model.PracticeStash.keys()}")
                 set_name = SimpleDialog('Load', f'Enter set name to load:\n{list(model.PracticeStash.keys())}')
-                self.model.practice_set = Set(model.PracticeStash[set_name])
+                model.practice_set = Set(model.PracticeStash[set_name])
+
+            elif command == Enum.MenuCommand.Pick_Main_Directory:
+                folder_selected = filedialog.askdirectory()
+
+                if os.path.exists(folder_selected):
+                    # Create automatically if they don't exist
+                    sets_folder_path = os.path.join(folder_selected, "sets")
+                    images_folder_path = os.path.join(folder_selected, "images")
+
+                    if not os.path.exists(folder_selected):
+                        os.mkdir(sets_folder_path)
+                        print('Folder named "sets" was created automatically!')
+
+                    if not os.path.exists(images_folder_path):
+                        os.mkdir(images_folder_path)
+                        print('Folder named "images" was created automatically!')
+
+                    model.Application['current_directory'] = folder_selected
+
+                    print(f"Success: current_directory changed to {model.Application['current_directory']}")
+                else:
+                    print(f'''Error: the path "{folder_selected}" doesn't exist!''')
 
             # Harvest
             elif command == Enum.HarvestCommand.Back:
@@ -213,7 +242,8 @@ Happy learning!'''
 
                         if term is not None:
                             del model.harvest_set.terms[term['identifier']]
-
+                else:
+                    print("Error: value needs to be greater than 0!")
 
             elif command == Enum.HarvestCommand.Set_Title:
                 current_title = model.Application['harvest_set_title']
@@ -227,22 +257,24 @@ Happy learning!'''
                 harvest_title = model.Application['harvest_set_title']
                 harvest_set_id = model.new_identifier()
 
-                name1 = f'{harvest_title}_{harvest_set_id}.txt'
-                name2 = f'{harvest_set_id}_{harvest_title}.txt'
+                # name1 = f'{harvest_title}_{harvest_set_id}.txt'
+                # name2 = f'{harvest_set_id}_{harvest_title}.txt'
+                saved_set_name = f'{harvest_set_id}_{harvest_title}.txt'
+                full_path = os.path.join(model.get_sets_path(), saved_set_name)
 
-                with open(fr'{Enum.SETS_DIRECTORY}\{name2}', mode='w') as fp:
+                with open(full_path, mode='w') as fp:
                     json.dump(model.harvest_set.terms, fp)
 
                     pyperclip.copy(f'{name2}')
             elif command == Enum.HarvestCommand.Load_Set:
                 # Get Names
                 files = model.get_set_files()
-                print("Sets:")
-                print(files)
+                print("Sets:\n", files)
 
                 harvest_title = SimpleDialog('Load', f'Enter harvest title.')
 
-                path = fr'{Enum.SETS_DIRECTORY}\{harvest_title}'
+                # path = fr'{Enum.SETS_DIRECTORY}\{harvest_title}'
+                path = os.path.join(model.get_sets_path(), harvest_title)
 
                 if os.path.exists(path):
                     with open(path, mode='r') as fp:
@@ -275,15 +307,16 @@ Happy learning!'''
 
                     else:
                         print('Failed to Schedule_All')
-            elif command == Enum.HarvestCommand.First:
-                model.Application['harvest_set_index'] = 0
+            # elif command == Enum.HarvestCommand.First:
+            #     model.Application['harvest_set_index'] = 0
             elif command == Enum.HarvestCommand.Load_All_Sets:
                 files = model.get_set_files()
 
                 terms = {}
 
                 for harvest_title in files:
-                    path = fr'{Enum.SETS_DIRECTORY}\{harvest_title}'
+                    # path = fr'{Enum.SETS_DIRECTORY}\{harvest_title}'
+                    path = os.path.join(model.get_sets_path(), harvest_title)
 
                     if os.path.exists(path):
                         with open(path, mode='r') as fp:
@@ -339,11 +372,13 @@ Happy learning!'''
                     term["context_text"] = new_context_text
 
             elif command == Enum.HarvestCommand.Help:
-                message = f'''You'll see a folder named collections. Use it to organize all of your sets. You can ideally download some sets from the internet. But, you'll have to manually move them to the main directory if you want to be able to load them and practice.
+                message = f'''You'll see a folder named collections. Use it to organize all of your sets. You can ideally download some sets from the internet.
 
-There are two folders: sets and images. These are two folders, holding all the necessary information for your practice. If you want to try a different pair, unfortunately, you will have to exit the program, and manually replace it with another pair. Store those pairs in a folder, named collections to stay organized.
+There are two folders: sets and images. These are two folders, holding all the necessary information for your practice.
 
-This program is primarily used for memorizing by using spaced repetition. A set contains a bunch of terms, which is basically like a flashcard. A schedule is a list of numbers, representing seconds. For example, the 0 represents you want to learn it now. The 15 represents you want to learn it after 15 seconds.'''
+This program is primarily used for memorizing by using spaced repetition. A set contains a bunch of terms, which is basically like a flashcard. A schedule is a list of numbers, representing seconds. For example, the 0 represents you want to learn it now. The 15 represents you want to learn it after 15 seconds.
+
+Type in term_[number] (for example: term_10) to set the index.'''
 
                 messagebox.showinfo('Help', message)
 
@@ -503,7 +538,8 @@ Tip: if these hotkeys ever become unresponsive, close and reopen the program to 
                     edited_image = view.tabs[view.Tab.Services.name].tabs[Enum.Service.Images.name].edited_image
 
                     new_image_name = f"img_{model.new_identifier()}.{extension}"
-                    image_file_path_destination = fr"{Enum.IMAGES_DIRECTORY}\{new_image_name}"
+                    # image_file_path_destination = fr"{Enum.IMAGES_DIRECTORY}\{new_image_name}"
+                    image_file_path_destination = os.path.join(model.get_images_path(), new_image_name)
 
                     edited_image.save(image_file_path_destination)
 
@@ -532,7 +568,11 @@ Tip: if these hotkeys ever become unresponsive, close and reopen the program to 
                     image_file = None
 
                 if image_file:
-                    os.remove(fr"{Enum.IMAGES_DIRECTORY}\{image_file}")
+                    # os.remove(fr"{Enum.IMAGES_DIRECTORY}\{image_file}")
+
+                    path_to_remove = os.path.join(model.get_images_path(), image_file)
+
+                    os.remove(path_to_remove)
             elif command == Enum.ImagesCommand.Replace:
                 current_index = model.Services['images']['current_index']
 
@@ -544,7 +584,8 @@ Tip: if these hotkeys ever become unresponsive, close and reopen the program to 
                 if image_name:
                     edited_image = view.tabs[view.Tab.Services.name].tabs[Enum.Service.Images.name].edited_image
 
-                    image_file_path_destination = fr"{Enum.IMAGES_DIRECTORY}\{image_name}"
+                    # image_file_path_destination = fr"{Enum.IMAGES_DIRECTORY}\{image_name}"
+                    image_file_path_destination = os.path.join(model.get_images_path(), image_name)
 
                     os.remove(image_file_path_destination)
                     edited_image.save(image_file_path_destination)
@@ -560,8 +601,8 @@ Tip: if these hotkeys ever become unresponsive, close and reopen the program to 
                 images = services.tabs[Enum.Service.Images.name]
                 images.to_fill = None
 
-            elif command == Enum.ImagesCommand.First:
-                model.Services['images']['current_index'] = 0
+            # elif command == Enum.ImagesCommand.First:
+            #     model.Services['images']['current_index'] = 0
 
             elif command == Enum.ImagesCommand.Help:
                 message = '''Given the selected image, the name of the image will be in your clipboard automatically, so that you may paste it and see its name.
@@ -569,7 +610,8 @@ Tip: if these hotkeys ever become unresponsive, close and reopen the program to 
 You can the commands Fill_Crimson and Fill_None to highlight certain parts of the image. If you want to redo it, hit enter. If you are satisfied with the result, use the command Replace to finalize the image.
 
 The Copy command will duplicate the image, so there will be two duplicated images.
-'''
+
+Type in img_[image name] (for example: img_300) to select a specific image.'''
 
                 messagebox.showinfo('Help', message)
 
@@ -1011,8 +1053,23 @@ word3'''
                     self.on_menu_command(Enum.StandardCommand.Enter)
 
             # General
+
             elif type(command) == str:
-                if command.startswith('t'):
+                if command.startswith('term_'):
+                    user_defined_harvest_index: str = command[5:]
+
+                    if user_defined_harvest_index.isnumeric():
+                        user_defined_harvest_index = int(user_defined_harvest_index)
+                        user_defined_harvest_index -= 1
+
+                        if 0 <= user_defined_harvest_index < len(model.harvest_set):
+                            model.Application['harvest_set_index'] = user_defined_harvest_index
+                        else:
+                            print(f"Error: {user_defined_harvest_index + 1} is not within range!")
+                    else:
+                        print(f"Error: {user_defined_harvest_index} is not an integer!")
+
+                elif command.startswith('t'):
                     # Short-cut for switching tabs
                     index = command[1:]
 
@@ -1025,6 +1082,7 @@ word3'''
                         return
 
                     view.notebook.select(index - 1)
+
                 elif command.startswith('s'):
                     # automatically go to Services tab
                     view.notebook.select(3 - 1)
@@ -1045,10 +1103,17 @@ word3'''
 
                         services.notebook.select(index - 1)
                 elif command.startswith('img_'):
-                    image_file_path_destination = fr"{Enum.IMAGES_DIRECTORY}\{command}"
+                    image_name = f"{command[4:]}.png"
+
+                    # image_file_path_destination = fr"{Enum.IMAGES_DIRECTORY}\{image_name}"
+                    image_file_path_destination = os.path.join(model.get_images_path(), image_name)
+
                     if os.path.exists(image_file_path_destination):
                         image_files = model.get_image_files()
-                        model.Services['images']['current_index'] = image_files.index(command)
+                        model.Services['images']['current_index'] = image_files.index(image_name)
+                    else:
+                        print(f'''Error: the path "{image_file_path_destination}" doesn't exist!''')
+
                 elif command.isnumeric():
                     # Short-cut for selecting command
                     index = int(command)

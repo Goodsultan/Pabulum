@@ -94,6 +94,7 @@ def see_subject_and_predicate_difference(subject: str, predicate: str) -> tuple[
 class PracticeWidget:
     def __init__(self, view, master, term: dict, is_main=False, is_focused=False):
         self.view = view
+        self.model = self.view.mediator.model
         self.term = term
 
         self.is_sounding = False
@@ -160,8 +161,6 @@ class PracticeWidget:
         # # (optional)
         # predicate_text = f'\n{predicate_text}'
 
-        model = self.view.mediator.model
-
         self.subject_text = f"{subject_text}"
         self.predicate_text = f"{predicate_text}"
 
@@ -174,7 +173,7 @@ class PracticeWidget:
         extra_length = len('Subject, ')
         self.subject_text = self.subject_text[extra_length:]
 
-        if model.Services['standard']['practice']['see_subject_and_predicate_difference']:
+        if self.model.Services['standard']['practice']['see_subject_and_predicate_difference']:
             self.subject_text, self.predicate_text = see_subject_and_predicate_difference(self.subject_text, self.predicate_text)
 
         self.subject_text = 'Subject,\n' + self.subject_text
@@ -189,9 +188,8 @@ class PracticeWidget:
 
         # Add subject hint, by showing the first letter
 
-
         original_subject_text = term.get('subject_text', '')
-        if model.Services['standard']['practice']['display_subject_hint'] and type(original_subject_text) == str and len(original_subject_text) >= 1:
+        if self.model.Services['standard']['practice']['display_subject_hint'] and type(original_subject_text) == str and len(original_subject_text) >= 1:
             self.predicate_text = f"{original_subject_text[0]}-\n\n{self.predicate_text}"
 
         # Adjust label
@@ -336,9 +334,11 @@ class PracticeWidget:
 
         # Image
         if self.term['subject_image']:
-            image_path = fr"{Enum.IMAGES_DIRECTORY}\{self.term['subject_image']}"
+            # image_path = fr"{Enum.IMAGES_DIRECTORY}\{self.term['subject_image']}"
             # image = Image.open(image_path)
             # image = ImageTk.PhotoImage(image)
+
+            image_path = os.path.join(self.model.get_images_path(), str(self.term['subject_image']))
             image = ImageFuncs.resize(image_path, **self.view.mediator.model.get_image_requirements())
 
             if image != '':
@@ -367,9 +367,11 @@ class PracticeWidget:
 
         # Image
         if self.term['subject_image']:
-            image_path = fr"{Enum.IMAGES_DIRECTORY}\{self.term['subject_image']}"
+            # image_path = fr"{Enum.IMAGES_DIRECTORY}\{self.term['subject_image']}"
             # image = Image.open(image_path)
             # image = ImageTk.PhotoImage(image)
+
+            image_path = os.path.join(self.model.get_images_path(), str(self.term['subject_image']))
             image = ImageFuncs.resize(image_path, **self.view.mediator.model.get_image_requirements())
 
             if image != '':
@@ -393,9 +395,11 @@ class PracticeWidget:
         self.label.configure(text=text_to_display, justify='left')
 
         if self.term['predicate_image']:
-            image_path = fr"{Enum.IMAGES_DIRECTORY}\{self.term['predicate_image']}"
+            # image_path = fr"{Enum.IMAGES_DIRECTORY}\{self.term['predicate_image']}"
             # image = Image.open(image_path)
             # image = ImageTk.PhotoImage(image)
+
+            image_path = os.path.join(self.model.get_images_path(), str(self.term['predicate_image']))
             image = ImageFuncs.resize(image_path, **self.view.mediator.model.get_image_requirements())
 
             if image != '':
@@ -408,11 +412,11 @@ class PracticeWidget:
                 self.label_for_displaying_image.configure(image='')
 
                 subject = self.term.get('subject_text', '')
-                if subject:
-                    self.label.configure(text=self.predicate_text + self.context_text + '\n' + Vocabulary.simple_redact(subject))
-                else:
-                    self.label.configure(
-                        text=self.predicate_text + self.context_text + '\n' + 'IMAGE NOT FOUND')
+
+                # if subject:
+                #     self.label.configure(text=self.predicate_text + self.context_text + '\n' + Vocabulary.simple_redact(subject))
+                # else:
+                self.label.configure(text=self.predicate_text + self.context_text + '\n' + 'PREDICATE IMAGE NOT FOUND')
 
         else:
             # self.label.configure(image='')
@@ -438,7 +442,7 @@ class PracticeWidget:
             self.entry_text_variable.set("")
             self.threaded_sound()
         elif user_input == '//':
-            normalize_text = self.view.mediator.model.normalize_text
+            normalize_text = self.model.normalize_text
             # self.label.configure(text=normalize_text(self.term['subject_text']))
             self.show_subject()
             self.entry_text_variable.set("")
@@ -450,7 +454,7 @@ class PracticeWidget:
             # Short-cut
             self.entry_text_variable.set(self.term['predicate_text'])
         elif user_input in ('..', ';;'):
-            normalize_text = self.view.mediator.model.normalize_text
+            normalize_text = self.model.normalize_text
             self.label.configure(text=normalize_text(self.term['predicate_text']))
             self.entry_text_variable.set("")
         else:
@@ -480,8 +484,10 @@ class PracticeWidget:
                 self.view.mediator.controller.update()
 
     def review_verify_user_input(self, user_input):
+        model = self.view.mediator.model
+
         if user_input == '' or user_input == self.term['subject_text'] or user_input == Enum.Scheduling.ScheduleIt:
-            scheduling = self.view.mediator.model.practice_set.schedule(self.term)
+            scheduling = self.model.practice_set.schedule(self.term)
 
             # # Additional Aid
             # self.threaded_sound('subject')
@@ -490,7 +496,7 @@ class PracticeWidget:
 
             self.term['schedule'] = new_schedule
 
-            scheduling = self.view.mediator.model.practice_set.schedule(self.term, 0)
+            scheduling = self.model.practice_set.schedule(self.term, 0)
 
             # # Additional Aid
             # self.threaded_sound('subject')
@@ -505,19 +511,19 @@ class PracticeWidget:
             subject_text = self.term['subject_text'].strip()
 
         if user_input == '' or user_input == self.term['subject_text'] or user_input == Enum.Scheduling.ScheduleIt:
-            scheduling = self.view.mediator.model.practice_set.schedule(self.term)
+            scheduling = self.model.practice_set.schedule(self.term)
 
             # Additional Aid
-            if model.Services['standard']['practice']['auto_sound_subjects']:
+            if self.model.Services['standard']['practice']['auto_sound_subjects']:
                 self.threaded_sound('subject')
         elif strip_subject_text and type(subject_text) == str:
             if user_input.strip().lower() == self.term['subject_text'].strip().lower():
-                scheduling = self.view.mediator.model.practice_set.schedule(self.term)
+                scheduling = self.model.practice_set.schedule(self.term)
 
                 # Additional Aid
-                if model.Services['standard']['practice']['auto_sound_subjects']:
+                if self.model.Services['standard']['practice']['auto_sound_subjects']:
                     self.threaded_sound('subject')
-        elif self.term['index'] == 1 and self.view.mediator.model.settings[Enum.Settings.Relearn_Index_One]:
+        elif self.term['index'] == 1 and self.model.settings[Enum.Settings.Relearn_Index_One]:
             # # Auto-penalize
             # if self.view.mediator.model.settings[Enum.Settings.Auto_Penalize]:
             #     schedule_type = model.settings[Enum.Settings.Auto_Penalize]
@@ -528,20 +534,21 @@ class PracticeWidget:
             #         if len(new_schedule) > len(self.term['schedule']):
             #             self.term['schedule'] = new_schedule
 
-            scheduling = self.view.mediator.model.practice_set.schedule(self.term, 0)
+            scheduling = self.model.practice_set.schedule(self.term, 0)
 
             # Additional Aid
-            if model.Services['standard']['practice']['auto_sound_subjects']:
+            if self.model.Services['standard']['practice']['auto_sound_subjects']:
                 self.threaded_sound('subject')
 
         if scheduling == Enum.Scheduling.Completed:
-            model.Application['completion_count'] += 1
+            self.model.Application['completion_count'] += 1
 
 
 class HarvestWidget:
     def __init__(self, view):
         self.view = view
         self.master = view.root
+        self.model = self.view.mediator.model
 
         self.GROUP = Standard
 
@@ -593,15 +600,14 @@ class HarvestWidget:
         self.view.mediator.controller.on_menu_command(command)
 
     def update(self):
-        model = self.view.mediator.model
-        term_to_enter = model.Services['standard']['term_to_enter']
+        term_to_enter = self.model.Services['standard']['term_to_enter']
 
         self.term_displayer.display_term(term_to_enter)
 
         # Persist
-        if model.Services['standard']['persist']:
-            if model.Services['standard']['persist_image_id']:
-                persist_image_id = model.Services['standard']['persist_image_id']
+        if self.model.Services['standard']['persist']:
+            if self.model.Services['standard']['persist_image_id']:
+                persist_image_id = self.model.Services['standard']['persist_image_id']
                 if self.last_image_persist_type == Enum.ImagePersistType.Subject_Image_Persist:
                     term_to_enter['subject_image'] = persist_image_id
                 elif self.last_image_persist_type == Enum.ImagePersistType.Predicate_Image_Persist:
@@ -611,8 +617,7 @@ class HarvestWidget:
                     term_to_enter['subject_image'] = persist_image_id
 
     def on_subject_paste(self):
-        model = self.view.mediator.model
-        term_to_enter = model.Services['standard']['term_to_enter']
+        term_to_enter = self.model.Services['standard']['term_to_enter']
 
         value = pyperclip.paste()
 
@@ -624,8 +629,7 @@ class HarvestWidget:
             self.on_menu_command(Enum.StandardCommand.Set_Subject_Text)
 
     def on_predicate_paste(self):
-        model = self.view.mediator.model
-        term_to_enter = model.Services['standard']['term_to_enter']
+        term_to_enter = self.model.Services['standard']['term_to_enter']
 
         value = pyperclip.paste()
 
@@ -637,8 +641,7 @@ class HarvestWidget:
             self.on_menu_command(Enum.StandardCommand.Set_Predicate_Text)
 
     def on_context_paste(self):
-        model = self.view.mediator.model
-        term_to_enter = model.Services['standard']['term_to_enter']
+        term_to_enter = self.model.Services['standard']['term_to_enter']
 
         value = pyperclip.paste()
 
@@ -650,8 +653,7 @@ class HarvestWidget:
             self.on_menu_command(Enum.StandardCommand.Set_Context_Text)
 
     def on_subject_and_predicate_paste(self):
-        model = self.view.mediator.model
-        term_to_enter = model.Services['standard']['term_to_enter']
+        term_to_enter = self.model.Services['standard']['term_to_enter']
 
         value = pyperclip.paste()
 
@@ -678,75 +680,68 @@ class HarvestWidget:
         # Persist
         self.last_image_persist_type = Enum.ImagePersistType.Subject_And_Predicate_Image_Persist
 
-    def on_passive_enter(self):
-        model = self.view.mediator.model
-        controller = self.view.mediator.controller
-
-        term_to_enter = model.Services['standard']['term_to_enter']
-        term_to_enter['passive'] = True
-        self.on_menu_command(Enum.StandardCommand.Enter)
-        term_to_enter['schedule'] = [0, 117, 330, 1777, 6220]
-        controller.update()
+    # def on_passive_enter(self):
+    #     model = self.view.mediator.model
+    #     controller = self.view.mediator.controller
+    #
+    #     term_to_enter = self.model.Services['standard']['term_to_enter']
+    #     term_to_enter['passive'] = True
+    #     self.on_menu_command(Enum.StandardCommand.Enter)
+    #     term_to_enter['schedule'] = [0, 117, 330, 1777, 6220]
+    #     controller.update()
 
     def on_1_enter(self):
-        model = self.view.mediator.model
         controller = self.view.mediator.controller
 
-        term_to_enter = model.Services['standard']['term_to_enter']
+        term_to_enter = self.model.Services['standard']['term_to_enter']
         self.on_menu_command(Enum.StandardCommand.Enter)
         term_to_enter['schedule'] = Enum.Schedule.HalfReinforced.value.copy()
         controller.update()
 
     def on_2_enter(self):
-        model = self.view.mediator.model
         controller = self.view.mediator.controller
 
-        term_to_enter = model.Services['standard']['term_to_enter']
+        term_to_enter = self.model.Services['standard']['term_to_enter']
         self.on_menu_command(Enum.StandardCommand.Enter)
         term_to_enter['schedule'] = Enum.Schedule.Standard.value.copy()
         controller.update()
 
     def on_3_enter(self):
-        model = self.view.mediator.model
         controller = self.view.mediator.controller
 
-        term_to_enter = model.Services['standard']['term_to_enter']
+        term_to_enter = self.model.Services['standard']['term_to_enter']
         self.on_menu_command(Enum.StandardCommand.Enter)
         term_to_enter['schedule'] = Enum.Schedule.HalfStandard.value.copy()
         controller.update()
 
     def on_4_enter(self):
-        model = self.view.mediator.model
         controller = self.view.mediator.controller
 
-        term_to_enter = model.Services['standard']['term_to_enter']
+        term_to_enter = self.model.Services['standard']['term_to_enter']
         self.on_menu_command(Enum.StandardCommand.Enter)
         term_to_enter['schedule'] = Enum.Schedule.ReinforcedLongest.value.copy()
         controller.update()
 
     def on_5_enter(self):
-        model = self.view.mediator.model
         controller = self.view.mediator.controller
 
-        term_to_enter = model.Services['standard']['term_to_enter']
+        term_to_enter = self.model.Services['standard']['term_to_enter']
         self.on_menu_command(Enum.StandardCommand.Enter)
         term_to_enter['schedule'] = Enum.Schedule.Longest.value.copy()
         controller.update()
 
     def on_6_enter(self):
-        model = self.view.mediator.model
         controller = self.view.mediator.controller
 
-        term_to_enter = model.Services['standard']['term_to_enter']
+        term_to_enter = self.model.Services['standard']['term_to_enter']
         self.on_menu_command(Enum.StandardCommand.Enter)
         term_to_enter['schedule'] = Enum.Schedule.Formula.value.copy()
         controller.update()
 
     def on_7_enter(self):
-        model = self.view.mediator.model
         controller = self.view.mediator.controller
 
-        term_to_enter = model.Services['standard']['term_to_enter']
+        term_to_enter = self.model.Services['standard']['term_to_enter']
         self.on_menu_command(Enum.StandardCommand.Enter)
         term_to_enter['schedule'] = Enum.Schedule.Reminder.value.copy()
         controller.update()

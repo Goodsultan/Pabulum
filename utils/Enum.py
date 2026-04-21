@@ -14,30 +14,30 @@ LIGHT_GRAY = '#D3D3D3'
 CRIMSON = '#DC143C'
 
 # Directories
-IMAGES_DIRECTORY = fr"{os.getcwd()}\images"
-SOUNDS_DIRECTORY = fr"{os.getcwd()}\sounds"
-SETS_DIRECTORY = fr"{os.getcwd()}\sets"
+# IMAGES_DIRECTORY = fr"{os.getcwd()}\images"
+# SETS_DIRECTORY = fr"{os.getcwd()}\sets" #os.path.join(os.getcwd(), "sets")
+# SOUNDS_DIRECTORY = fr"{os.getcwd()}\sounds"
 
-COLLECTIONS_DIRECTORY = fr"{os.getcwd()}\collections"
+# COLLECTIONS_DIRECTORY = fr"{os.getcwd()}\collections"
 
-MAX_NUMBER_OF_AUXILIARY_FOLDERS = 1000
-
-# To add more images and sets folder into the same directory
-auxiliary_images_directories = [
-    fr"{os.getcwd()}\images_{i}"
-    for i in range(1, MAX_NUMBER_OF_AUXILIARY_FOLDERS+1)
-] # + [
-#     fr"{os.getcwd()}\images{i}"
+# MAX_NUMBER_OF_AUXILIARY_FOLDERS = 1000
+#
+# # To add more images and sets folder into the same directory
+# auxiliary_images_directories = [
+#     fr"{os.getcwd()}\images_{i}"
 #     for i in range(1, MAX_NUMBER_OF_AUXILIARY_FOLDERS+1)
-# ]
-
-auxiliary_sets_directories = [
-    fr"{os.getcwd()}\sets_{i}"
-    for i in range(1, MAX_NUMBER_OF_AUXILIARY_FOLDERS+1)
-] # + [
-#     fr"{os.getcwd()}\sets{i}"
+# ] # + [
+# #     fr"{os.getcwd()}\images{i}"
+# #     for i in range(1, MAX_NUMBER_OF_AUXILIARY_FOLDERS+1)
+# # ]
+#
+# auxiliary_sets_directories = [
+#     fr"{os.getcwd()}\sets_{i}"
 #     for i in range(1, MAX_NUMBER_OF_AUXILIARY_FOLDERS+1)
-# ]
+# ] # + [
+# #     fr"{os.getcwd()}\sets{i}"
+# #     for i in range(1, MAX_NUMBER_OF_AUXILIARY_FOLDERS+1)
+# # ]
 
 WINDOW_WIDTH = 300
 WINDOW_HEIGHT = int(WINDOW_WIDTH * (1 / GOLDEN_RATIO))
@@ -249,6 +249,8 @@ class Model(enum.Enum):
     # "identifier_count": 47471, "completion_count": 99241,
 
     Application = {
+        'current_directory': os.getcwd(),
+
         'identifier_count': 0,
         'completion_count': 0,
 
@@ -366,6 +368,7 @@ class MenuCommand(AbstractCommandClass):
     Randomize_Practice = enum.auto()
     Load_Practice_Set = enum.auto()
     Save_Practice_Set = enum.auto()
+    Pick_Main_Directory = enum.auto()
 
 
 class HarvestCommand(AbstractCommandClass):
@@ -388,7 +391,7 @@ class HarvestCommand(AbstractCommandClass):
 
     Schedule_All = enum.auto()
 
-    First = enum.auto()
+    # First = enum.auto()
 
     Load_All_Sets = enum.auto()
 
@@ -448,7 +451,7 @@ class ImagesCommand(AbstractCommandClass):
     Fill_Crimson = enum.auto()
     Fill_None = enum.auto()
 
-    First=enum.auto()
+    # First=enum.auto()
 
 
 class PracticeCommand(AbstractCommandClass):

@@ -69,20 +69,28 @@ class Model:
 
         self.Application['harvest_set_index'] = len(self.harvest_set) - 1
 
-    @staticmethod
-    def get_image_files():
+    def get_sets_path(self):
+        return os.path.join(self.Application['current_directory'], "sets")
+
+    def get_images_path(self):
+        return os.path.join(self.Application['current_directory'], "images")
+
+    # @staticmethod
+    # def get_sounds_path(self):
+    #     return fr"{os.getcwd()}\sounds"
+
+    def get_image_files(self):
         image_files = tuple(
-            f for f in os.listdir(Enum.IMAGES_DIRECTORY)
-            if os.path.isfile(os.path.join(Enum.IMAGES_DIRECTORY, f))
+            f for f in os.listdir(self.get_images_path())
+            if os.path.isfile(os.path.join(self.get_images_path(), f))
         )
 
         return sorted(image_files)
 
-    @staticmethod
-    def get_set_files():
+    def get_set_files(self):
         set_files = tuple(
-            f for f in os.listdir(Enum.SETS_DIRECTORY)
-            if os.path.isfile(os.path.join(Enum.SETS_DIRECTORY, f))
+            f for f in os.listdir(self.get_sets_path())
+            if os.path.isfile(os.path.join(self.get_sets_path(), f))
         )
 
         return sorted(set_files)

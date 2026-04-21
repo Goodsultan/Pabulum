@@ -3,6 +3,7 @@ from tkinter import ttk
 from PIL import Image, ImageTk, ImageDraw
 import pyperclip
 import copy
+import os
 
 from utils import Enum
 
@@ -104,7 +105,8 @@ class HarvestWidget:
             image_file = image_files[current_index]
 
         if image_file:
-            image_path = fr"{Enum.IMAGES_DIRECTORY}\{image_file}"
+            # image_path = fr"{Enum.IMAGES_DIRECTORY}\{image_file}"
+            image_path = os.path.join(model.get_images_path(), image_file)
             image = Image.open(image_path)
 
             self.edited_image = image

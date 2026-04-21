@@ -5,17 +5,19 @@ import os
 
 def resize(image_path: str, max_height=1000, min_height=0, max_width=700):
     try:
-        original_image_name = image_path[image_path.rindex('\\'):]
+        # original_image_name = image_path[image_path.rindex('\\'):]
         if os.path.exists(image_path):
             original_image = Image.open(image_path)
         else:
-            for auxiliary_images_directory in Enum.auxiliary_images_directories:
-                new_path = auxiliary_images_directory + original_image_name
-                if os.path.exists(new_path):
-                    original_image = Image.open(new_path)
-                    break
-            else:
-                return ''
+            return ''
+        # else:
+        #     for auxiliary_images_directory in Enum.auxiliary_images_directories:
+        #         new_path = auxiliary_images_directory + original_image_name
+        #         if os.path.exists(new_path):
+        #             original_image = Image.open(new_path)
+        #             break
+        #     else:
+        #         return ''
 
         width, height = original_image.size
 

@@ -65,15 +65,17 @@ class Menu:
 
         # Update message
         # + f"\nidentifier_count: {model.Application['identifier_count']}" \
+        # + f"\ncurrent_directory: {model.Application['current_directory']}" \
 
         message = f"now: {datetime.datetime.now().isoformat()}" \
+                  + f"\nnumber of sets: {len(model.get_set_files())}" \
                   + f"\ncompletion_count: {model.Application['completion_count']}" \
+                  + f"\n" \
                   + f"\nlen(priority)/len(practice_set): {len(model.practice_set.categorize()['priority'])}/{len(model.practice_set)}" \
                   + f"\nlowest index: {min([term['index'] for term in model.practice_set] + [math.inf])}" \
                   + f"\nnext term in: {lowest_difference}" \
                   + f"\nnext non-zero term in: {lowest_difference_2}" \
                   + f"\nschedules used: {schedules}" \
-                  + f"\nnumber of sets: {len(model.get_set_files())}" \
                   + f"\n\n{pprint.pformat(model.settings)}" \
                   # + f"\n\n{[attr for attr in dir(Enum.Preset) if not attr.startswith('__')]}" \
                   # + f"\n\n{[attr for attr in dir(Enum.Schedule) if not attr.startswith('__')]}"
