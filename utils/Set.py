@@ -2,6 +2,7 @@ import typing
 import random
 import datetime
 import json
+import pprint
 
 from utils import Enum
 from utils.SimpleDialog import SimpleDialog
@@ -15,7 +16,7 @@ class Set:
     @staticmethod
     def reenter(term, attribute=None, message=None):
         if attribute is None:
-            attribute = SimpleDialog('Attribute', 'Enter term attribute.')
+            attribute = SimpleDialog('Attribute', f'Enter term attribute.\n\n{pprint.pformat(term)}')
 
         if attribute in tuple(Enum.TermAttribute):
             current_value = term.get(attribute, None)
@@ -102,15 +103,15 @@ class Set:
             term['index'] += delta
             index = term['index']
         else:
-            # Trial
-            if index == 0:
-                if 'on_trial' in term and term['on_trial']:
-                    i = Enum.trials_list.index(term['schedule'])
-
-                    if i != len(Enum.trials_list) - 1:
-                        i += 1
-
-                    term['schedule'] = Enum.trials_list[i].copy()
+            # # Trial
+            # if index == 0:
+            #     if 'on_trial' in term and term['on_trial']:
+            #         i = Enum.trials_list.index(term['schedule'])
+            #
+            #         if i != len(Enum.trials_list) - 1:
+            #             i += 1
+            #
+            #         term['schedule'] = Enum.trials_list[i].copy()
 
             term['index'] = index
 

@@ -24,20 +24,20 @@ MAX_NUMBER_OF_AUXILIARY_FOLDERS = 1000
 
 # To add more images and sets folder into the same directory
 auxiliary_images_directories = [
-    fr"{os.getcwd()}\images{i}"
-    for i in range(1, MAX_NUMBER_OF_AUXILIARY_FOLDERS+1)
-] + [
     fr"{os.getcwd()}\images_{i}"
     for i in range(1, MAX_NUMBER_OF_AUXILIARY_FOLDERS+1)
-]
+] # + [
+#     fr"{os.getcwd()}\images{i}"
+#     for i in range(1, MAX_NUMBER_OF_AUXILIARY_FOLDERS+1)
+# ]
 
 auxiliary_sets_directories = [
-    fr"{os.getcwd()}\sets{i}"
-    for i in range(1, MAX_NUMBER_OF_AUXILIARY_FOLDERS+1)
-] + [
     fr"{os.getcwd()}\sets_{i}"
     for i in range(1, MAX_NUMBER_OF_AUXILIARY_FOLDERS+1)
-]
+] # + [
+#     fr"{os.getcwd()}\sets{i}"
+#     for i in range(1, MAX_NUMBER_OF_AUXILIARY_FOLDERS+1)
+# ]
 
 WINDOW_WIDTH = 300
 WINDOW_HEIGHT = int(WINDOW_WIDTH * (1 / GOLDEN_RATIO))
@@ -356,6 +356,7 @@ class AbstractCommandClass(enum.Enum):
 
 class MenuCommand(AbstractCommandClass):
     Help = enum.auto()
+
     # Dump_Data = enum.auto()
     Exit = enum.auto()
     Reset_Completion_Count = enum.auto()
@@ -368,17 +369,23 @@ class MenuCommand(AbstractCommandClass):
 
 
 class HarvestCommand(AbstractCommandClass):
+    Help = enum.auto()
+
     Back = enum.auto()
     Forward = enum.auto()
 
     Harvest = enum.auto()
-    Clear = enum.auto()
+    Clear_Set = enum.auto()
     Delete = enum.auto()
     Reenter = enum.auto()
+
     Practice = enum.auto()
-    Title = enum.auto()
+    Practice_Amount_Of_Terms = enum.auto()
+
+    Set_Title = enum.auto()
     Save = enum.auto()
-    Load = enum.auto()
+    Load_Set = enum.auto()
+
     Schedule_All = enum.auto()
 
     First = enum.auto()
@@ -392,12 +399,12 @@ class HarvestCommand(AbstractCommandClass):
 
     Load_From_Practice_Set = enum.auto()
 
-    Assign_Terms_Set_Title_Context = enum.auto()
-
-    Help = enum.auto()
+    Assign_All_Title_As_Context = enum.auto()
 
 
 class StandardCommand(AbstractCommandClass):
+    Help = enum.auto()
+
     Enter = enum.auto()
     Reset = enum.auto()
 
@@ -420,8 +427,6 @@ class StandardCommand(AbstractCommandClass):
 
     # Invert_All = enum.auto()
 
-    Help = enum.auto()
-
 
 class ImagePersistType(enum.StrEnum):
     No_Persist = enum.auto()
@@ -431,25 +436,30 @@ class ImagePersistType(enum.StrEnum):
 
 
 class ImagesCommand(AbstractCommandClass):
+    Help = enum.auto()
+
     Back = enum.auto()
     Forward = enum.auto()
+
     Copy = enum.auto()
     Screenshot = enum.auto()
     Delete = enum.auto()
     Replace = enum.auto()
     Fill_Crimson = enum.auto()
     Fill_None = enum.auto()
+
     First=enum.auto()
-    Help = enum.auto()
 
 
 class PracticeCommand(AbstractCommandClass):
+    Help = enum.auto()
+
     Delete = enum.auto()
     Relearn = enum.auto()
     Reenter = enum.auto()
     Toggle_Alert = enum.auto()
     Set_Practice_Stack_Length = enum.auto()
-    Clear = enum.auto()
+    Clear_Set = enum.auto()
     Penalize = enum.auto()
     # Penalize_Standard = enum.auto()
     # Penalize_Reinforced = enum.auto()
@@ -463,8 +473,6 @@ class PracticeCommand(AbstractCommandClass):
     Toggle_Display_Subject_Hint = enum.auto()
     Toggle_See_Subject_And_Predicate_Difference = enum.auto()
 
-    Help = enum.auto()
-
 
 class TranslationCommand(AbstractCommandClass):
     Translate_Text = enum.auto()
@@ -477,6 +485,8 @@ class TranslationCommand(AbstractCommandClass):
 
 
 class VocabularyCommand(AbstractCommandClass):
+    Help = enum.auto()
+
     Extend_Vocabulary_List = enum.auto()
     Rewrite_Word = enum.auto()
     Discard_Word = enum.auto()
@@ -486,7 +496,6 @@ class VocabularyCommand(AbstractCommandClass):
     # Redact_Word = enum.auto()
     Reverse = enum.auto()
     Copy_Vocabulary_List = enum.auto()
-    Help = enum.auto()
 
 
 class RegexCommand(AbstractCommandClass):

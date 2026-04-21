@@ -168,7 +168,7 @@ Happy learning!'''
                 if is_ok:
                     model.practice_set.update(model.harvest_set)
                     model.harvest_set.clear()
-            elif command == Enum.HarvestCommand.Clear:
+            elif command == Enum.HarvestCommand.Clear_Set:
                 is_ok = messagebox.askokcancel('Confirm', 'Are you sure you clear harvest_set?')
 
                 if is_ok:
@@ -192,7 +192,30 @@ Happy learning!'''
                 if term:
                     model.practice_set.update({term['identifier']: term})
                     self.on_menu_command(Enum.HarvestCommand.Delete)
-            elif command == Enum.HarvestCommand.Title:
+
+            elif command == Enum.HarvestCommand.Practice_Amount_Of_Terms:
+                new_value = SimpleDialog("Practice_Amount_Of_Terms", "Enter amount of terms you want to practice.", input_class=int, initial_value=1)
+
+                if new_value >= 1:
+                    for _ in range(new_value):
+                        # Check if there are enough terms
+                        if len(model.harvest_set) <= 0:
+                            break
+
+                        # Add to practice set
+                        term = model.harvest_set.index(0)
+
+                        if term is not None:
+                            model.practice_set.update({term['identifier']: term})
+
+                        # Delete
+                        term = model.harvest_set.index(0)
+
+                        if term is not None:
+                            del model.harvest_set.terms[term['identifier']]
+
+
+            elif command == Enum.HarvestCommand.Set_Title:
                 current_title = model.Application['harvest_set_title']
                 title = SimpleDialog('Title', 'Enter title.', initial_value=current_title)
 
@@ -211,8 +234,13 @@ Happy learning!'''
                     json.dump(model.harvest_set.terms, fp)
 
                     pyperclip.copy(f'{name2}')
-            elif command == Enum.HarvestCommand.Load:
-                harvest_title = SimpleDialog('Load', 'Enter harvest title.')
+            elif command == Enum.HarvestCommand.Load_Set:
+                # Get Names
+                files = model.get_set_files()
+                print("Sets:")
+                print(files)
+
+                harvest_title = SimpleDialog('Load', f'Enter harvest title.')
 
                 path = fr'{Enum.SETS_DIRECTORY}\{harvest_title}'
 
@@ -301,7 +329,7 @@ Happy learning!'''
             elif command == Enum.HarvestCommand.Load_From_Practice_Set:
                 model.harvest_set.update(model.practice_set)
 
-            elif command == Enum.HarvestCommand.Assign_Terms_Set_Title_Context:
+            elif command == Enum.HarvestCommand.Assign_All_Title_As_Context:
                 for term_id, term in model.harvest_set.items():
                     new_context_text = model.Application['harvest_set_title']
 
@@ -571,7 +599,7 @@ The Copy command will duplicate the image, so there will be two duplicated image
             elif command == Enum.PracticeCommand.Set_Practice_Stack_Length:
                 integer = SimpleDialog('Stack Length', 'Enter stack length.', input_class=int)
                 model.settings[Enum.Settings.Practice_Stack_Length] = integer
-            elif command == Enum.PracticeCommand.Clear:
+            elif command == Enum.PracticeCommand.Clear_Set:
                 is_ok = messagebox.askokcancel('Confirm', 'Are you sure you clear practice_set?')
 
                 if is_ok:
@@ -581,12 +609,29 @@ The Copy command will duplicate the image, so there will be two duplicated image
                 term = model.practice_set.terms.get(term_identifier, None)
 
                 if term:
-                    schedule_type = SimpleDialog('Schedule', 'Enter schedule type.', input_class=str)
+                    # schedule_type = SimpleDialog('Schedule', 'Enter schedule type.', input_class=str)
+                    schedule_type = SimpleDialog('Schedule', 'Enter schedule name, or a json list, like [0, 100, 200].', input_class=str)
 
-                    if schedule_type in dir(Enum.Schedule):
-                        new_schedule: list = copy.deepcopy(Enum.Schedule[schedule_type].value)
+                    try:
+                        new_schedule: list = json.loads(schedule_type)
+
+                        # check if list is entered correctly
+                        if type(new_schedule) is not list or len(new_schedule) <= 0:
+                            raise ValueError
+
+                        for value in new_schedule:
+                            if type(value) is not int or value < 0:
+                                raise ValueError
 
                         term['schedule'] = new_schedule.copy()
+                        term['index'] = 0
+                    except:
+                        if schedule_type in dir(Enum.Schedule):
+                            new_schedule: list = copy.deepcopy(Enum.Schedule[schedule_type].value)
+
+                            term['schedule'] = new_schedule.copy()
+                            term['index'] = 0
+
             # elif command == Enum.PracticeCommand.Penalize_Standard:
             #     term_identifier = model.Application['current_practice_term_identifier']
             #     term = model.practice_set.terms.get(term_identifier, None)
